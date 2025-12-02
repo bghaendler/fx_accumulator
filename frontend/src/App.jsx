@@ -44,6 +44,21 @@ const CustomTooltip = ({ active, payload, label }) => {
 
     const showPnl = data.chart_pnl !== null && data.chart_pnl !== undefined;
 
+    // Calculate formula components for display
+    let formulaDisplay = null;
+    if (showPnl && data.strike && data.spot && data.units) {
+      const priceDiff = (data.spot - data.strike).toFixed(4);
+      const returnPct = ((data.spot - data.strike) / data.spot * 100).toFixed(3);
+      const amount = Math.abs(data.units).toLocaleString();
+      formulaDisplay = {
+        amount,
+        priceDiff,
+        spot: data.spot.toFixed(4),
+        returnPct,
+        isPositive: data.pnl >= 0
+      };
+    }
+
     return (
       <div className="custom-tooltip">
         <div className="tooltip-date">{label}</div>
@@ -52,10 +67,27 @@ const CustomTooltip = ({ active, payload, label }) => {
           <span style={{ fontFamily: 'monospace', fontWeight: '700' }}>{data.spot?.toFixed(4)}</span>
         </div>
         {showPnl && (
-          <div className="tooltip-row">
-            <span style={{ color: isProfit ? 'var(--success)' : 'var(--danger)' }}>Daily P&L:</span>
-            <span style={{ fontWeight: '700' }}>${data.pnl?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-          </div>
+          <>
+            <div className="tooltip-row">
+              <span style={{ color: isProfit ? 'var(--success)' : 'var(--danger)' }}>Daily P&L:</span>
+              <span style={{ fontWeight: '700' }}>${data.pnl?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            </div>
+            {formulaDisplay && (
+              <div style={{
+                marginTop: '8px',
+                padding: '6px 8px',
+                background: 'rgba(0,0,0,0.03)',
+                borderRadius: '4px',
+                fontSize: '0.75rem',
+                fontFamily: 'monospace',
+                lineHeight: '1.4'
+              }}>
+                <div style={{ color: '#666', marginBottom: '2px' }}>Formula:</div>
+                <div>{formulaDisplay.amount} × ({formulaDisplay.priceDiff} / {formulaDisplay.spot})</div>
+                <div style={{ color: '#666' }}>= {formulaDisplay.amount} × {formulaDisplay.returnPct}%</div>
+              </div>
+            )}
+          </>
         )}
         {tags.length > 0 && (
           <div style={{ marginTop: '8px', display: 'flex', gap: '5px', flexWrap: 'wrap' }}>

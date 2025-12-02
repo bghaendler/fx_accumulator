@@ -3,6 +3,14 @@
   command = "npm run build"
   publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  
+  # Python runtime for serverless functions
+  [functions."*"]
+    included_files = ["backend/**"]
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

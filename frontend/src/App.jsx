@@ -11,6 +11,9 @@ import {
 } from 'lucide-react';
 import './App.css';
 
+// API Configuration
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 // --- THEME CONSTANTS ---
 const COLORS = {
   delta: "#001489", // Navy
@@ -92,7 +95,7 @@ const StructureView = ({ formData }) => {
     const fetchStructure = async () => {
       setLoading(true); setError(null);
       try {
-        const res = await axios.post('http://localhost:8000/structure', formData);
+        const res = await axios.post(`${API_URL}/structure`, formData);
         setStructure(res.data);
       } catch (err) { 
         console.error("Failed to fetch structure", err); 
@@ -302,12 +305,12 @@ const SimulatorView = ({ formData, setFormData, result, setResult }) => {
     try {
         if (solveTarget) {
             const solverPayload = { ...formData, spot_price: 1.08, volatility: 0.1, risk_free_rate: 0.05, days_to_expiry: 252, target_param: solveTarget };
-            const res = await axios.post('http://localhost:8000/solve', solverPayload);
+            const res = await axios.post(`${API_URL}/solve`, solverPayload);
             setFormData(prev => ({ ...prev, [solveTarget]: parseFloat(res.data.solved_value.toFixed(4)) }));
             setSolveTarget(null);
         } else {
             setResult(null);
-            const res = await axios.post('http://localhost:8000/simulate', formData);
+            const res = await axios.post(`${API_URL}/simulate`, formData);
             setResult(res.data);
         }
     } catch (err) { setError('Request failed. Check backend.'); } 
@@ -443,7 +446,7 @@ const ValuationView = ({ sharedData }) => {
     e.preventDefault(); setLoading(true);
     const payload = { ...marketInputs, ...sharedData };
     try {
-      const res = await axios.post('http://localhost:8000/valuation', payload);
+      const res = await axios.post(`${API_URL}/valuation`, payload);
       setData(res.data);
     } catch (err) { console.error(err); } finally { setLoading(false); }
   };

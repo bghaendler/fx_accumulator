@@ -437,16 +437,11 @@ const SimulatorView = ({ formData, setFormData, result, setResult, supportedPair
               <div className="form-group"><label>Notional</label><input className="form-control" type="number" value={formData.notional} onChange={(e) => handleInputChange('notional', parseFloat(e.target.value))} /></div>
 
               <div className="gearing-panel" style={{ marginTop: '10px' }}>
-                <div className="gearing-header"><Gauge size={16} /> Gearing Setup</div>
-                <div className="input-row">
-                  <div className="form-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><label>Leverage</label> <TargetButton target="leverage" /></div>
-                    <input className="form-control" type="number" step="0.1" value={formData.leverage} onChange={(e) => handleInputChange('leverage', parseFloat(e.target.value))} disabled={solveTarget === 'leverage'} />
-                  </div>
-                  <div className="form-group">
-                    <label># Fixings</label>
-                    <input className="form-control" type="number" value={formData.gearing_limit} onChange={(e) => handleInputChange('gearing_limit', parseInt(e.target.value))} />
-                  </div>
+                <div className="gearing-header"><Gauge size={16} /> Gearing Setup (2x Leverage)</div>
+                <div className="form-group">
+                  <label># Geared Fixings</label>
+                  <input className="form-control" type="number" value={formData.gearing_limit} onChange={(e) => handleInputChange('gearing_limit', parseInt(e.target.value))} />
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>First N fixings apply 2x leverage when unfavorable</div>
                 </div>
               </div>
 
@@ -613,7 +608,7 @@ function App() {
     strike_price: 0,
     ko_price: 0,
     notional: 1000000,
-    leverage: 2.0,
+    leverage: 2.0, // Fixed at 2x
     gearing_limit: 52
   });
   const [simulationResult, setSimulationResult] = useState(null);
@@ -648,7 +643,7 @@ function App() {
             end_date: prev.end_date || endDateStr,
             strike_price: parseFloat(strike.toFixed(4)),
             ko_price: parseFloat(barrier.toFixed(4)),
-            // Don't reset everything if it looks customized, but here we reset purely based on ticker change context
+            leverage: 2.0, // Always 2x
           }));
         }
       } catch (e) {

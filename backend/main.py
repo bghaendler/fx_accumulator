@@ -335,7 +335,7 @@ async def simulate_structure(req: SimulationRequest):
             elif date_str in fixing_set:
                 fixing_counter += 1
                 is_geared = fixing_counter <= req.gearing_limit
-                cur_lev = req.leverage if is_geared else 1.0
+                cur_lev = 2.0 if is_geared else 1.0  # Fixed 2x leverage
                 amount = req.notional
                 
                 if req.product_type == StructureType.ACCUMULATOR:

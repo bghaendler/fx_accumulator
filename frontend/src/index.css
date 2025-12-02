@@ -1,0 +1,101 @@
+/* src/index.css */
+
+/* --- FONT DEFINITIONS --- */
+
+/* 1. Extra Light (200) */
+@font-face {
+    font-family: 'Verlag';
+    src: url('../fonts/Verlag-XLight.otf') format('opentype'),
+         url('../fonts/Verlag-XLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+
+/* 2. Light (300) */
+@font-face {
+    font-family: 'Verlag';
+    src: url('../fonts/Verlag-Light.otf') format('opentype'),
+         url('../fonts/Verlag-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+/* 3. Light Italic (300) */
+@font-face {
+    font-family: 'Verlag';
+    src: url('../fonts/Verlag-LightItalic.otf') format('opentype'),
+         url('../fonts/Verlag-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+}
+
+/* 4. Book / Normal (400) */
+@font-face {
+    font-family: 'Verlag';
+    src: url('../fonts/Verlag-Book.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* 5. Bold (700) */
+@font-face {
+    font-family: 'Verlag';
+    /* Note: Filename has a space based on directory structure */
+    src: url('../fonts/Verlag Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* 6. Black (900) */
+@font-face {
+    font-family: 'Verlag';
+    src: url('../fonts/Verlag-Black.otf') format('opentype'),
+         url('../fonts/Verlag-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+/* 7. Black Italic (900) */
+@font-face {
+    font-family: 'Verlag';
+    src: url('../fonts/Verlag-BlackItalic.otf') format('opentype'),
+         url('../fonts/Verlag-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+}
+
+/* --- GLOBAL VARIABLES --- */
+
+:root {
+  /* Fonts */
+  --font-primary: 'Verlag', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Verlag', 'Roboto Mono', monospace;
+
+  /* Corporate Colors */
+  --color-primary-blue: #001489;
+  --color-text-dark: #141e55;
+  --color-text-light: #7b6469;
+  
+  /* Financial Data Colors */
+  --color-bid: #008675;         /* Teal Green */
+  --color-ask: #971B2F;         /* Deep Red */
+  --color-trader-bid: #6e2b62;  /* Purple */
+  --color-trader-ask: #CC8A00;  /* Amber/Gold */
+  
+  /* Layout Colors */
+  --color-background-light: #f7f6f2;
+  --color-border: #e3e5e5;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+code {
+  font-family: var(--font-mono);
+}

@@ -344,7 +344,9 @@ async def simulate_structure(req: SimulationRequest):
                         action = f"Accumulate ({cur_lev}x)"
                     else:
                         action = "Accumulate (1x)"
-                    daily_pnl = amount * (spot - req.strike_price)
+                    # P&L = units * (execution_price - strike_price) / execution_price
+                    # For buying base currency: profit when spot > strike
+                    daily_pnl = amount * ((spot - req.strike_price) / spot)
                     daily_units = amount
                 else:
                     if spot > req.strike_price:
@@ -352,7 +354,8 @@ async def simulate_structure(req: SimulationRequest):
                         action = f"Decumulate ({cur_lev}x)"
                     else:
                         action = "Decumulate (1x)"
-                    daily_pnl = amount * (req.strike_price - spot)
+                    # For selling base currency: profit when strike > spot  
+                    daily_pnl = amount * ((req.strike_price - spot) / spot)
                     daily_units = -amount
                 chart_pnl = round(daily_pnl, 2)
 
@@ -363,6 +366,25 @@ async def simulate_structure(req: SimulationRequest):
         return { "summary": { "final_pnl": round(total_pnl, 2), "total_accumulated_value": round(total_units, 2), "status": "Knocked Out" if knocked_out else "Expired", "ko_date": ko_date, "product_type": req.product_type }, "chart_data": simulation_data }
     except Exception as e:
         logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/spot")
+async def get_spot_price(ticker: str):
+    try:
+        ticker_obj = yf.Ticker(ticker)
+        # Fast fetch of current price
+        df = ticker_obj.history(period="1d")
+        if df.empty:
+             # Fallback for some tickers
+            df = yf.download(ticker, period="1d", progress=False)
+            
+        if df.empty: 
+            raise HTTPException(status_code=404, detail=f"No data found for {ticker}")
+            
+        current_spot = float(df['Close'].iloc[-1])
+        return {"ticker": ticker, "spot": round(current_spot, 5), "date": str(df.index[-1].date())}
+    except Exception as e:
+        logger.error(f"Spot Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

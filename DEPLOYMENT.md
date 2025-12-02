@@ -39,13 +39,15 @@ The frontend will start on `http://localhost:5173`
 
 ## Environment Variables
 
-The application uses Vite's environment variable system:
+The application uses a unified API URL structure for both development and production:
 
-- **`.env.development`**: Used during local development (`npm run dev`)
-  - `VITE_API_URL=http://localhost:8000`
+- **`.env.development`**: `VITE_API_URL=/.netlify/functions`
+  - Vite proxies these requests to `http://localhost:8000`
+  
+- **`.env.production`**: `VITE_API_URL=/.netlify/functions`
+  - Netlify routes these to serverless functions
 
-- **`.env.production`**: Used during production build (`npm run build`)
-  - `VITE_API_URL=/.netlify/functions`
+This ensures consistent behavior across environments.
 
 ## Netlify Deployment
 

@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import logging
 from typing import List, Optional
+from mangum import Mangum
 
 # 1. Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -22,6 +23,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Vercel serverless handler (must be at module level)
+handler = Mangum(app, lifespan="off")
 
 # 3. Data Models
 class StructureType(str, Enum):
@@ -393,10 +397,6 @@ async def get_spot_price(ticker: str):
         logger.error(f"Spot Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# Vercel serverless handler
-from mangum import Mangum
-handler = Mangum(app, lifespan="off")
 
 # Local development only
 if __name__ == "__main__":

@@ -1,51 +1,67 @@
-# Deploying to Vercel
+# Vercel Deployment - Final Configuration
 
-To deploy this full-stack application (React + Python FastAPI) to Vercel, follow these steps.
+## What We Fixed
 
-## 1. Project Structure
+The `TypeError: issubclass() arg 1 must be a class` error was caused by Vercel not being able to properly find and load the handler.
 
-The project is now configured with:
--   `frontend/`: React + Vite application
--   `backend/`: FastAPI application (main logic)
--   `api/`: Vercel serverless functions (wrapper that imports from `backend/`)
+## Current Structure
 
-Vercel requires Python serverless functions to be in the `api/` folder. The `api/index.py` file imports your FastAPI app from `backend/main.py`.
+```
+fx-accumulator/
+├── api/                    # Vercel serverless functions (REQUIRED location)
+│   ├── app.py             # FastAPI application (copied from backend/main.py)
+│   ├── index.py           # Vercel handler (imports app and wraps with Mangum)
+│   └── requirements.txt   # Python dependencies
+├── backend/               # Original backend (kept for local development)
+│   ├── main.py
+│   └── requirements.txt
+├── frontend/              # React application
+│   └── ...
+└── vercel.json           # Vercel configuration
+```
 
-## 2. Vercel Dashboard Settings
+## How It Works
 
-Go to your Vercel Project Settings and configure:
+1. **`api/app.py`**: Contains your complete FastAPI application with all endpoints (`/solve`, `/simulate`, etc.)
+2. **`api/index.py`**: 
+   - Imports the FastAPI `app` from `app.py`
+   - Wraps it with `Mangum` (ASGI to AWS Lambda/Vercel adapter)
+   - Exports `handler` variable that Vercel expects
+3. **`vercel.json`**: Routes API requests to `/api/index`
 
-### Build & Development Settings
--   **Framework Preset**: Select **Vite**.
--   **Root Directory**: Leave this **EMPTY**.
--   **Build Command**: Override and set to:
-    ```bash
-    cd frontend && npm install && npm run build
-    ```
--   **Output Directory**: Override and set to:
-    ```bash
-    frontend/dist
-    ```
+## Key Points
 
-### Environment Variables
-Add the following environment variable:
--   **Key**: `VITE_API_URL`
--   **Value**: `/` (just a forward slash)
+✅ **Variable name**: The handler is named `handler` (Vercel requirement)  
+✅ **Location**: Files are in `api/` folder (Vercel requirement)  
+✅ **Same directory import**: `from app import app` works because both files are in `api/`  
+✅ **Mangum adapter**: Converts FastAPI (ASGI) to Vercel's serverless format  
 
-This tells the frontend to make API calls to the same domain, which Vercel will route to your Python functions.
+## Deploy
 
-## 3. Deploy
--   Push your changes to GitHub.
--   Vercel will automatically trigger a deployment.
--   The `vercel.json` configuration handles routing API requests to `/api/index` (your Python backend).
+1. **Push to GitHub**:
+   ```bash
+   git add .
+   git commit -m "Fix Vercel backend configuration"
+   git push
+   ```
 
-## 4. Important Notes
+2. **Vercel will automatically**:
+   - Detect `api/index.py`
+   - Install dependencies from `api/requirements.txt`
+   - Create serverless function with `handler`
+   - Route requests per `vercel.json`
 
-### Function Size Limits
-Vercel's free tier has a 250MB limit for serverless functions. Your backend uses heavy libraries (`pandas`, `numpy`, `yfinance`). If deployment fails due to size:
-1.  **Upgrade to Vercel Pro** (50MB → 250MB limit increase)
-2.  **Or switch to Google Cloud Run** (see `DEPLOYMENT_GCP.md`) which has no such limits
+## Testing After Deploy
 
-### Python Version
-The backend uses Python 3.9 (specified in `runtime.txt`). Vercel will automatically use this version.
+Once deployed, test your endpoints:
+- `https://your-app.vercel.app/solve`
+- `https://your-app.vercel.app/simulate`
+- `https://your-app.vercel.app/spot?ticker=EURUSD=X`
 
+## Important Notes
+
+⚠️ **Function Size**: Your backend uses heavy libraries (pandas, numpy, yfinance). If deployment fails with "Function too large":
+- Upgrade to Vercel Pro (250MB limit)
+- OR use Google Cloud Run instead (see `DEPLOYMENT_GCP.md`)
+
+⚠️ **yfinance Rate Limits**: Yahoo Finance may rate-limit Vercel's shared IPs. Consider using a paid data provider for production.

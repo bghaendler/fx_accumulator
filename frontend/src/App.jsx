@@ -431,6 +431,11 @@ const SimulatorView = ({ formData, setFormData, result, setResult, supportedPair
                 <div className="form-group"><label>End</label><input className="form-control" type="date" value={formData.end_date} onChange={(e) => handleInputChange('end_date', e.target.value)} /></div>
               </div>
               <div className="form-group"><label><Calendar size={14} /> Frequency</label><select className="form-control" value={formData.frequency} onChange={(e) => handleInputChange('frequency', e.target.value)}><option value="Daily">Daily</option><option value="Weekly">Weekly (Fri)</option><option value="Monthly">Monthly (End)</option></select></div>
+              <div className="form-group">
+                <label>Total Fixings</label>
+                <input className="form-control" type="number" value={formData.total_fixings} onChange={(e) => handleInputChange('total_fixings', parseInt(e.target.value))} />
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>Total number of fixing dates in the schedule</div>
+              </div>
               <div className="form-section-title">Economics</div>
               <div className="form-group"><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><label>Strike</label> <TargetButton target="strike_price" /></div><input className="form-control" type="number" step="0.0001" value={formData.strike_price} onChange={(e) => handleInputChange('strike_price', parseFloat(e.target.value))} disabled={solveTarget === 'strike_price'} /></div>
               <div className="form-group"><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><label>Barrier</label> <TargetButton target="ko_price" /></div><input className="form-control" type="number" step="0.0001" value={formData.ko_price} onChange={(e) => handleInputChange('ko_price', parseFloat(e.target.value))} disabled={solveTarget === 'ko_price'} /></div>
@@ -609,7 +614,8 @@ function App() {
     ko_price: 0,
     notional: 1000000,
     leverage: 2.0, // Fixed at 2x
-    gearing_limit: 52
+    gearing_limit: 52,
+    total_fixings: 52 // Total number of fixings
   });
   const [simulationResult, setSimulationResult] = useState(null);
   const [initLoading, setInitLoading] = useState(false);
@@ -644,6 +650,7 @@ function App() {
             strike_price: parseFloat(strike.toFixed(4)),
             ko_price: parseFloat(barrier.toFixed(4)),
             leverage: 2.0, // Always 2x
+            total_fixings: 52, // Default to 52 fixings
           }));
         }
       } catch (e) {

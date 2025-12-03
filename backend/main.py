@@ -49,6 +49,7 @@ class SimulationRequest(BaseModel):
     notional: float
     leverage: float
     gearing_limit: int
+    total_fixings: int = None  # Optional: limit number of fixings
 
 class ValuationRequest(BaseModel):
     spot_price: float
@@ -305,6 +306,11 @@ async def simulate_structure(req: SimulationRequest):
         df.columns = [c.capitalize() for c in df.columns]
 
         fixing_list = get_schedule(req.start_date, req.end_date, req.frequency)
+        
+        # Limit to total_fixings if specified
+        if req.total_fixings and req.total_fixings > 0:
+            fixing_list = fixing_list[:req.total_fixings]
+        
         fixing_set = set(fixing_list)
         
         simulation_data = []

@@ -5,6 +5,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
 from main import app
+from mangum import Mangum
 
-# Export the app for Vercel
-handler = app
+# Wrap FastAPI app with Mangum for serverless compatibility
+handler = Mangum(app, lifespan="off")

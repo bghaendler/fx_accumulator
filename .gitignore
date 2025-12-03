@@ -1,4 +1,14 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# --- Python / FastAPI ---
+__pycache__/
+*.pyc
+venv/
+.env
+
+# --- React / Node ---
+node_modules/
+build/
+dist/
+.DS_Store# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
 /node_modules

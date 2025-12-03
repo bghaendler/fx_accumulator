@@ -4,6 +4,26 @@
     "framework": "vite",
     "rewrites": [
         {
+            "source": "/solve",
+            "destination": "/api/index"
+        },
+        {
+            "source": "/valuation",
+            "destination": "/api/index"
+        },
+        {
+            "source": "/structure",
+            "destination": "/api/index"
+        },
+        {
+            "source": "/simulate",
+            "destination": "/api/index"
+        },
+        {
+            "source": "/spot",
+            "destination": "/api/index"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

@@ -46,9 +46,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 
     // Calculate formula components for display
     let formulaDisplay = null;
-    if (showPnl && data.strike && data.spot && data.units) {
+    if (showPnl && data.strike != null && data.spot != null && data.units != null) {
       const priceDiff = (data.spot - data.strike).toFixed(4);
-      const returnPct = ((data.spot - data.strike) / data.spot * 100).toFixed(3);
+      const returnPct = data.spot ? ((data.spot - data.strike) / data.spot * 100).toFixed(3) : "0.000";
       const amount = Math.abs(data.units).toLocaleString();
       formulaDisplay = {
         amount,
@@ -64,7 +64,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         <div className="tooltip-date">{label}</div>
         <div className="tooltip-row">
           <span style={{ color: 'var(--primary)' }}>Spot Price:</span>
-          <span style={{ fontFamily: 'monospace', fontWeight: '700' }}>{data.spot?.toFixed(4)}</span>
+          <span style={{ fontFamily: 'monospace', fontWeight: '700' }}>{data.spot?.toFixed(4) || "0.0000"}</span>
         </div>
         {showPnl && (
           <>
@@ -210,7 +210,7 @@ const StructureView = ({ formData }) => {
                     <td style={{ padding: '12px 15px', textAlign: 'center', borderLeft: '1px solid #f1f5f9', background: '#fafffc' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#166534', fontWeight: '600' }}><CheckCircle2 size={16} /> {action}</div>
                     </td>
-                    <td style={{ padding: '12px 15px', textAlign: 'right', fontFamily: 'monospace', background: '#fafffc' }}>@{fix.leg_1.strike.toFixed(4)}</td>
+                    <td style={{ padding: '12px 15px', textAlign: 'right', fontFamily: 'monospace', background: '#fafffc' }}>@{fix.leg_1.strike?.toFixed(4) || "0.0000"}</td>
                     <td style={{ padding: '12px 15px', textAlign: 'right', fontWeight: '600', color: '#166534', background: '#fafffc' }}>{fix.leg_1.notional.toLocaleString()}</td>
                     <td style={{ padding: '12px 15px', textAlign: 'center', borderLeft: '1px solid #f1f5f9', background: '#fffcfc' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: fix.geared ? '#c2410c' : '#94a3b8', fontWeight: '600' }}>
@@ -218,7 +218,7 @@ const StructureView = ({ formData }) => {
                         {fix.geared ? 'Obligation (Geared)' : 'Obligation'}
                       </div>
                     </td>
-                    <td style={{ padding: '12px 15px', textAlign: 'right', fontFamily: 'monospace', background: '#fffcfc' }}>@{fix.leg_2.strike.toFixed(4)}</td>
+                    <td style={{ padding: '12px 15px', textAlign: 'right', fontFamily: 'monospace', background: '#fffcfc' }}>@{fix.leg_2.strike?.toFixed(4) || "0.0000"}</td>
                     <td style={{ padding: '12px 15px', textAlign: 'right', fontWeight: '600', color: fix.geared ? '#c2410c' : '#64748b', background: '#fffcfc' }}>{fix.leg_2.notional.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -283,10 +283,10 @@ const TermsheetView = ({ data, simulationResult }) => {
             <tbody>
               <tr><td>Structure Type</td><td><strong>{data.product_type}</strong> ({isAcc ? `Buy ${baseCcy}` : `Sell ${baseCcy}`})</td></tr>
               <tr><td>Notional Amount</td><td>{data.notional.toLocaleString()} {baseCcy} per Fixing</td></tr>
-              <tr><td>Leverage (Gearing)</td><td><strong>{data.leverage.toFixed(2)}x</strong></td></tr>
+              <tr><td>Leverage (Gearing)</td><td><strong>{data.leverage?.toFixed(2) || "2.00"}x</strong></td></tr>
               <tr><td>Gearing Condition</td><td>Applies only to the first <strong>{data.gearing_limit}</strong> fixings. Subsequent fixings are 1x.</td></tr>
-              <tr><td>Strike Price (K)</td><td><strong>{data.strike_price.toFixed(4)}</strong> {quoteCcy}</td></tr>
-              <tr><td>Knock-Out Barrier (B)</td><td><strong>{data.ko_price.toFixed(4)}</strong> {quoteCcy}</td></tr>
+              <tr><td>Strike Price (K)</td><td><strong>{data.strike_price?.toFixed(4) || "0.0000"}</strong> {quoteCcy}</td></tr>
+              <tr><td>Knock-Out Barrier (B)</td><td><strong>{data.ko_price?.toFixed(4) || "0.0000"}</strong> {quoteCcy}</td></tr>
             </tbody>
           </table>
         </div>
@@ -354,7 +354,9 @@ const SimulatorView = ({ formData, setFormData, result, setResult, supportedPair
       if (solveTarget) {
         const solverPayload = { ...formData, spot_price: 1.08, volatility: 0.1, risk_free_rate: 0.05, days_to_expiry: 252, target_param: solveTarget };
         const res = await axios.post(`${API_URL}/solve`, solverPayload);
-        setFormData(prev => ({ ...prev, [solveTarget]: parseFloat(res.data.solved_value.toFixed(4)) }));
+        if (res.data.solved_value != null) {
+          setFormData(prev => ({ ...prev, [solveTarget]: parseFloat(res.data.solved_value.toFixed(4)) }));
+        }
         setSolveTarget(null);
       } else {
         setResult(null);
@@ -462,7 +464,7 @@ const SimulatorView = ({ formData, setFormData, result, setResult, supportedPair
           <div className="dashboard-animate">
             <div className="stats-grid">
               <div className="stat-card"><div className="stat-header">Total P&L</div><div className={`stat-value ${result.summary.final_pnl >= 0 ? 'text-green' : 'text-red'}`}>${result.summary.final_pnl.toLocaleString()}</div></div>
-              {performanceMetric && (<div className="stat-card" style={{ background: performanceMetric.isPositive ? '#f0fdf4' : '#fef2f2', borderColor: performanceMetric.isPositive ? '#bbf7d0' : '#fecaca' }}><div className="stat-header" style={{ color: performanceMetric.isPositive ? 'var(--success)' : 'var(--danger)' }}>{performanceMetric.isPositive ? <Trophy size={16} /> : <TrendingDown size={16} />} Market Perf</div><div className="stat-value" style={{ color: performanceMetric.isPositive ? 'var(--success)' : 'var(--danger)' }}>{performanceMetric.isPositive ? '+' : ''}{performanceMetric.beatPercentage.toFixed(2)}%</div></div>)}
+              {performanceMetric && (<div className="stat-card" style={{ background: performanceMetric.isPositive ? '#f0fdf4' : '#fef2f2', borderColor: performanceMetric.isPositive ? '#bbf7d0' : '#fecaca' }}><div className="stat-header" style={{ color: performanceMetric.isPositive ? 'var(--success)' : 'var(--danger)' }}>{performanceMetric.isPositive ? <Trophy size={16} /> : <TrendingDown size={16} />} Market Perf</div><div className="stat-value" style={{ color: performanceMetric.isPositive ? 'var(--success)' : 'var(--danger)' }}>{performanceMetric.isPositive ? '+' : ''}{performanceMetric.beatPercentage?.toFixed(2) || "0.00"}%</div></div>)}
               <div className="stat-card"><div className="stat-header">Status</div><div className="stat-value" style={{ color: result.summary.status.includes("Knock") ? 'var(--warning)' : 'var(--success)' }}>{result.summary.status}</div><div className="stat-sub">{result.summary.ko_date || "Full Term"}</div></div>
             </div>
             <div className="chart-card">
@@ -478,7 +480,7 @@ const SimulatorView = ({ formData, setFormData, result, setResult, supportedPair
                 <ComposedChart data={result.chart_data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} minTickGap={40} />
-                  <YAxis yAxisId="left" domain={['auto', 'auto']} tickFormatter={(val) => val.toFixed(4)} tick={{ fill: 'var(--primary)' }} />
+                  <YAxis yAxisId="left" domain={['auto', 'auto']} tickFormatter={(val) => val?.toFixed(4) || ""} tick={{ fill: 'var(--primary)' }} />
                   <YAxis yAxisId="right" orientation="right" tickFormatter={(val) => `$${val}`} tick={{ fill: 'var(--text-muted)' }} />
                   <Tooltip content={<CustomTooltip />} />
                   {gearingEndDate && <ReferenceArea yAxisId="left" x1={result.chart_data[0].date} x2={gearingEndDate} fill="#000" fillOpacity={0.05} label={{ value: "Fast Start", position: 'insideTopLeft', fill: '#9ca3af', fontSize: 10 }} />}
@@ -635,23 +637,25 @@ function App() {
 
         // 2. Fetch Spot
         const res = await axios.get(`${API_URL}/spot`, { params: { ticker: globalData.ticker } });
-        const spot = res.data.spot;
+        const spot = res.data?.spot;
 
-        // 3. Calculate Levels
-        const isAcc = globalData.product_type === 'Accumulator';
-        const strike = spot; // Strike = Spot
-        const barrier = isAcc ? spot * 1.10 : spot * 0.90; // Barrier 10% away
+        if (spot != null) {
+          // 3. Calculate Levels
+          const isAcc = globalData.product_type === 'Accumulator';
+          const strike = spot; // Strike = Spot
+          const barrier = isAcc ? spot * 1.10 : spot * 0.90; // Barrier 10% away
 
-        if (isMounted) {
-          setGlobalData(prev => ({
-            ...prev,
-            start_date: prev.start_date || startDateStr, // Keep existing if set
-            end_date: prev.end_date || endDateStr,
-            strike_price: parseFloat(strike.toFixed(4)),
-            ko_price: parseFloat(barrier.toFixed(4)),
-            leverage: 2.0, // Always 2x
-            total_fixings: 52, // Default to 52 fixings
-          }));
+          if (isMounted) {
+            setGlobalData(prev => ({
+              ...prev,
+              start_date: prev.start_date || startDateStr, // Keep existing if set
+              end_date: prev.end_date || endDateStr,
+              strike_price: parseFloat(strike.toFixed(4)),
+              ko_price: parseFloat(barrier.toFixed(4)),
+              leverage: 2.0, // Always 2x
+              total_fixings: 52, // Default to 52 fixings
+            }));
+          }
         }
       } catch (e) {
         console.error("Init failed", e);
